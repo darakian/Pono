@@ -1,0 +1,6 @@
+[package]
+name = "Pono"
+version = "0.1.0"
+authors = ["Jon Moroney <darakian@gmail.com>"]
+
+[dependencies]

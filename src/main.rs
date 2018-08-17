@@ -13,7 +13,8 @@ type BoxFut = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<hyper::Uri>>>) -> Response<Body> {
     match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
-        _ => {},
+        Some(_entry) => {},
+        None => {},
     }
     Response::new(Body::from(format!("Request ")))
 }

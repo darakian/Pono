@@ -11,8 +11,7 @@ use std::sync::Arc;
 //Extended from the examples at https://github.com/hyperium/hyper/tree/master/examples
 type BoxFut = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
-fn test(req: Request<Body>, forward_table: Arc<HashMap<(String, String), hyper::Uri>>) -> Response<Body> {
-
+fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<hyper::Uri>>>) -> Response<Body> {
     match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
         _ => {},
     }
@@ -21,14 +20,14 @@ fn test(req: Request<Body>, forward_table: Arc<HashMap<(String, String), hyper::
 
 fn main() {
     let addr = ([127, 0, 0, 1], 3000).into();
-    //Create and fill forwarding table
-    let forward_table: HashMap<(String, String), hyper::Uri> = HashMap::new();
+    //Create and fill forwarding table later
+    let forward_table: HashMap<(String, String), Vec<hyper::Uri>> = HashMap::new();
     let arc_table = Arc::new(forward_table);
 
     let server = Server::bind(&addr)
         .serve(move || {
             let arc_table = arc_table.clone();
-            service_fn_ok(move |req| test(req, arc_table.clone()))
+            service_fn_ok(move |req| forward(req, arc_table.clone()))
         })
         .map_err(|e| eprintln!("server error: {}", e));
 

@@ -1,6 +1,8 @@
 [package]
-name = "Pono"
+name = "hyper_test"
 version = "0.1.0"
 authors = ["Jon Moroney <darakian@gmail.com>"]
 
 [dependencies]
+hyper = "0.12"
+futures = "0.1"

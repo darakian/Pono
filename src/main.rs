@@ -12,24 +12,20 @@ use std::sync::Arc;
 type BoxFut = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 fn test(req: Request<Body>, forward_table: Arc<HashMap<(String, String), hyper::Uri>>) -> Response<Body> {
+
+    match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
+        _ => {},
+    }
     Response::new(Body::from(format!("Request ")))
 }
 
 fn main() {
     let addr = ([127, 0, 0, 1], 3000).into();
+    //Create and fill forwarding table
     let forward_table: HashMap<(String, String), hyper::Uri> = HashMap::new();
     let arc_table = Arc::new(forward_table);
-    //
-    // let service_forward = move || {
-    //     let arc_table = arc_table.clone();
-    //     service_fn_ok(move |req: Request<Body>| {
-    //         let handler = arc_table.entry((req.method().to_string(), req.uri().path().to_string()));
-    //         Response::new(Body::from(format!("Request ")))
-    //     })
-    // };
 
     let server = Server::bind(&addr)
-        //.serve(|| service_fn(service_forward))
         .serve(move || {
             let arc_table = arc_table.clone();
             service_fn_ok(move |req| test(req, arc_table.clone()))

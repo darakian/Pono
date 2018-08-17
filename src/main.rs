@@ -1,10 +1,12 @@
 extern crate futures;
 extern crate hyper;
+extern crate rand;
 
+use rand::random;
 use futures::future;
 use hyper::rt::{Future, Stream};
 use hyper::service::{service_fn, service_fn_ok};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::{Body, Method, Request, Response, Server, StatusCode, Client};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -12,8 +14,16 @@ use std::sync::Arc;
 type BoxFut = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<hyper::Uri>>>) -> Response<Body> {
+    let client = Client::new();
     match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
-        Some(_entry) => {},
+        Some(entry) => {
+            let mut request = Request::builder().method(req.method())
+                .uri(entry.get(random()%entry.len()).unwrap())
+                .header("X-Custom-Foo", "Bar")
+                .body(req.body().clone())
+                .unwrap();
+            client.request(request);
+        },
         None => {},
     }
     Response::new(Body::from(format!("Request ")))

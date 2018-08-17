@@ -17,7 +17,6 @@ fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<
     let client = Client::new();
     match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
         Some(entry) => {
-            //let destination_uri: hyper::Uri = entry[random::<usize>()%entry.len()];
             let mut request = Request::builder().method(req.method())
                 .uri(&entry[random::<usize>()%entry.len()])
                 .header("X-Custom-Foo", "Bar")
@@ -25,7 +24,14 @@ fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<
                 .unwrap();
             client.request(request);
         },
-        None => {},
+        None => { //No endpoint found. Send to default route
+            let mut request = Request::builder().method(req.method())
+                .uri("http://httpbin.org/ip")
+                .header("X-Custom-Foo", "Bar")
+                .body(req.into_body())
+                .unwrap();
+            client.request(request);
+        },
     }
     Response::new(Body::from(format!("Request ")))
 }

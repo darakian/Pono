@@ -30,7 +30,10 @@ fn main() {
 
     let server = Server::bind(&addr)
         //.serve(|| service_fn(service_forward))
-        .serve(|| service_fn_ok(|req| test(req, arc_table.clone())))
+        .serve(move || {
+            let arc_table = arc_table.clone();
+            service_fn_ok(move |req| test(req, arc_table.clone()))
+        })
         .map_err(|e| eprintln!("server error: {}", e));
 
     println!("Listening on http://{}", addr);

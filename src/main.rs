@@ -18,7 +18,7 @@ fn forward(req: Request<Body>, forward_table: Arc<HashMap<(String, String), Vec<
     match forward_table.get(&(req.method().to_string(), req.uri().path().to_string())){
         Some(entry) => {
             let mut request = Request::builder().method(req.method())
-                .uri(entry.get(random::<usize>()%entry.len()).unwrap())
+                .uri(entry.get(random::<usize>()%entry.len()).unwrap()) //Pick random endpoint to service request.
                 .header("X-Custom-Foo", "Bar")
                 .body(req.into_body())
                 .unwrap();
